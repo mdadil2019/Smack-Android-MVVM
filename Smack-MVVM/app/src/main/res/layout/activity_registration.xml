@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+    tools:context="com.smack.mdadil2019.smack_mvvm.ui.signup.RegistrationActivity">
+
+<TextView
+    android:id="@+id/textViewCreateAcc"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="44dp"
+    android:text="Create an account"
+    android:textColor="@color/colorAccent"
+    android:textSize="24sp"
+    android:textStyle="bold" />
+
+<android.support.design.widget.TextInputLayout
+    android:id="@+id/textInputContainerUser"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/textViewCreateAcc"
+    android:layout_centerHorizontal="true"
+    android:layout_marginLeft="40dp"
+    android:layout_marginTop="10dp">
+
+    <android.support.design.widget.TextInputEditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorAccent"
+        android:hint="Username"
+        android:id="@+id/textInputUserNameReg"/>
+</android.support.design.widget.TextInputLayout>
+
+<android.support.design.widget.TextInputLayout
+    android:id="@+id/textInputContainerPass"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/textInputContainerUser"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="10dp"
+    android:layout_marginLeft="40dp">
+
+    <android.support.design.widget.TextInputEditText
+        android:id="@+id/textInputPasswordReg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorAccent"
+        android:hint="Password"
+        android:inputType="textPassword" />
+</android.support.design.widget.TextInputLayout>
+
+<android.support.design.widget.TextInputLayout
+    android:id="@+id/textInputEmailContainr"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/textInputContainerPass"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="10dp"
+    android:layout_marginLeft="40dp">
+
+    <android.support.design.widget.TextInputEditText
+        android:id="@+id/textInputEmailReg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorAccent"
+        android:hint="Email"
+        android:inputType="textEmailAddress" />
+</android.support.design.widget.TextInputLayout>
+
+<Button
+    android:id="@+id/createAccountBtn"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/textInputEmailContainr"
+    android:layout_marginTop="30dp"
+    android:layout_centerHorizontal="true"
+    android:background="@color/colorAccent"
+    android:text="Create Account"
+    android:textColor="@android:color/white" />
+
+<ProgressBar
+    android:layout_width="@dimen/progressBarSize"
+    android:layout_height="@dimen/progressBarSize"
+    android:layout_centerHorizontal="true"
+    android:layout_alignBottom="@id/textInputEmailContainr"
+    android:id="@+id/progressBarEmail"
+    android:visibility="invisible"/>
+</RelativeLayout>
