@@ -19,6 +19,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 import static android.view.View.INVISIBLE;
@@ -50,6 +51,7 @@ public class RegistrationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registration);
+        ButterKnife.bind(this);
         ((MyApp)getApplication()).getApplicationComponent().inject(this);
         getViewModel();
         setObservers();
@@ -59,10 +61,12 @@ public class RegistrationActivity extends AppCompatActivity {
         registrationViewModel.createResponseData.observe(this, new Observer<CreateUserResponse>() {
             @Override
             public void onChanged(@Nullable CreateUserResponse createUserResponse) {
+                pgBarRegistration.setVisibility(INVISIBLE);
                 //save data to preferences
                 registrationViewModel.saveDataToPrefs(createUserResponse);
 
                 //start another activity
+                Toast.makeText(RegistrationActivity.this, createUserResponse.getEmail(), Toast.LENGTH_SHORT).show();
             }
         });
 

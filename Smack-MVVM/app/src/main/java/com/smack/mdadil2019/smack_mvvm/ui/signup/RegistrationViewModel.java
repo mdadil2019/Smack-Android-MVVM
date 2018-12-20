@@ -95,7 +95,7 @@ public class RegistrationViewModel extends ViewModel {
 
                 @Override
                 public void onError(Throwable e) {
-
+                    errorData.setValue(e.getMessage());
                 }
 
                 @Override

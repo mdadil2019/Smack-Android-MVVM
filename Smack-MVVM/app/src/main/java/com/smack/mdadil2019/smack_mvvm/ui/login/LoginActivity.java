@@ -1,9 +1,11 @@
 package com.smack.mdadil2019.smack_mvvm.ui.login;
 
+import android.Manifest;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProvider;
 
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -13,8 +15,16 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.anonymanager.mdadil2019.smack_mvvm.R;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.MultiplePermissionsReport;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.smack.mdadil2019.smack_mvvm.data.network.model.LoginResponse;
 import com.smack.mdadil2019.smack_mvvm.di.root.MyApp;
+import com.smack.mdadil2019.smack_mvvm.ui.signup.RegistrationActivity;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -83,7 +93,34 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    @OnClick(R.id.textViewSignup)void openSignUpActivity(){
+        startActivity(new Intent(this,RegistrationActivity.class));
+        finish();
+    }
+
+
     private LoginViewModel getViewModel() {
         return ViewModelProviders.of(this,mViewModelFactory).get(LoginViewModel.class);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Dexter.withActivity(this)
+                .withPermissions(Manifest.permission.INTERNET,Manifest.permission.ACCESS_WIFI_STATE,Manifest.permission.ACCESS_NETWORK_STATE)
+                .withListener(new MultiplePermissionsListener() {
+                    @Override
+                    public void onPermissionsChecked(MultiplePermissionsReport report) {
+                        if(!report.areAllPermissionsGranted()){
+                            Toast.makeText(LoginActivity.this, "You can't access the features of the app without permissions", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+
+                    }
+                }).check();
     }
 }
