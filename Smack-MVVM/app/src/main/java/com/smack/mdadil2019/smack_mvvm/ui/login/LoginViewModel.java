@@ -66,6 +66,10 @@ public class LoginViewModel extends ViewModel {
         mPrefs.setLoggedIn(true);
     }
 
+    public boolean isLoggedIn(){
+        return mPrefs.getLoggedInStatus();
+    }
+
     public boolean inputsAreValid(String uName, String password){
         if(uName!=null && !uName.equals("") && password!=null && !password.equals(""))
             return true;

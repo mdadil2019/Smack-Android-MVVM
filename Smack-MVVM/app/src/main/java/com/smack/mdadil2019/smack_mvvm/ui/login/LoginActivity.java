@@ -22,6 +22,7 @@ import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.smack.mdadil2019.smack_mvvm.data.network.model.LoginResponse;
 import com.smack.mdadil2019.smack_mvvm.di.root.MyApp;
+import com.smack.mdadil2019.smack_mvvm.ui.chat.NavDrawer;
 import com.smack.mdadil2019.smack_mvvm.ui.signup.RegistrationActivity;
 
 import java.util.List;
@@ -62,6 +63,8 @@ public class LoginActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         ((MyApp)getApplication()).getApplicationComponent().inject(this);
         loginViewModel = getViewModel();
+        if(loginViewModel.isLoggedIn())
+            startActivity(new Intent(this,NavDrawer.class));
         setObservers();
     }
 
@@ -73,6 +76,7 @@ public class LoginActivity extends AppCompatActivity {
                 loginPgBar.setVisibility(View.INVISIBLE);
                 loginViewModel.setLoggedIn();
                 //start new activity
+                startActivity(new Intent(LoginActivity.this,NavDrawer.class));
             }
         });
 

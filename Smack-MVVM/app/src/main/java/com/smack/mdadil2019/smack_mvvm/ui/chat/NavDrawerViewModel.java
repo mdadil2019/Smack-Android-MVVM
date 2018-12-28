@@ -41,7 +41,10 @@ public class NavDrawerViewModel extends ViewModel {
     ArrayList<MessageResponse> messages;
 
     MutableLiveData<String> channelErrorData;
+    MutableLiveData<String> chatRoomErrorData;
     MutableLiveData<ArrayList<ChannelResponse>> channelAddedData;
+    MutableLiveData<ArrayList<MessageResponse>> chatRoomData;
+
 
     public NavDrawerViewModel(Context context, AppPreferencesHelper appPreferencesHelper, ChannelService channelService, ChannelResponse channelResponse,
                               MessageService messageService){
@@ -51,11 +54,16 @@ public class NavDrawerViewModel extends ViewModel {
         sharedPrefs = appPreferencesHelper;
         mMessageService = messageService;
         mContext = context;
+        messages = new ArrayList<>();
+
 
         channelErrorData = new MutableLiveData<>();
         channelAddedData = new MutableLiveData<>();
+        chatRoomData = new MutableLiveData<>();
+        chatRoomErrorData = new MutableLiveData<>();
         try {
             mSocket = IO.socket("https://adilchat.herokuapp.com");
+            mSocket.connect();
         } catch (URISyntaxException e) {
 //            view.showUIMessage(e.getMessage());
         }
@@ -76,7 +84,7 @@ public class NavDrawerViewModel extends ViewModel {
                     channelResponse.setChannelId(String.valueOf(args[2]));
 
                     channels.add(channelResponse);
-                    channelAddedData.setValue(channels);
+                    channelAddedData.postValue(channels);
                 }
 
             });
@@ -142,7 +150,6 @@ public class NavDrawerViewModel extends ViewModel {
 
 
     public void openChatRoom(String channelName) {
-        view.showProgressbar();
         String id = "";
         for(ChannelResponse res : channels){
             if(res.getChannelName().equals(channelName)){
@@ -166,7 +173,9 @@ public class NavDrawerViewModel extends ViewModel {
                             @Override
                             public void run() throws Exception {
                                 for(MessageResponse m: messages){
-                                    MessageDatabase.getInstance(mContext).getMessageDao().insertMessage(m);
+
+//                                    ROOM Setup -- will do later
+//                                    MessageDatabase.getInstance(mContext).getMessageDao().insertMessage(m);
                                 }
                             }
                         }).subscribeOn(Schedulers.io())
@@ -176,15 +185,13 @@ public class NavDrawerViewModel extends ViewModel {
 
                     @Override
                     public void onError(Throwable e) {
-                        view.showUIMessage(e.getMessage());
-                        view.hideProgressBar();
+                        chatRoomErrorData.setValue(e.getMessage());
                     }
 
                     @Override
                     public void onComplete() {
                         //pass data to adapter to populate the messages
-                        view.updateRecyclerView(messages);
-                        view.hideProgressBar();
+                        chatRoomData.setValue(messages);
                     }
                 });
     }
@@ -203,17 +210,13 @@ public class NavDrawerViewModel extends ViewModel {
 //                messageResponse.setAvatarColor(args[5].toString());
                     messageResponse.setTimeStamp(args[7].toString());
                     messages.add(messageResponse);
-                    view.updateRecyclerView(messages);
+                    chatRoomData.postValue(messages);
                 }
             });
         }
     }
 
     public void sendMessage(String channelName,String messsge) {
-        if(messsge==null || messsge.equals("")){
-            view.showUIMessage("Please enter message to send");
-        }else{
-
             String id = "";
             for(ChannelResponse res : channels){
                 if(res.getChannelName().equals(channelName)){
@@ -228,48 +231,43 @@ public class NavDrawerViewModel extends ViewModel {
             Date date = new Date();
             String timeStamp = String.valueOf(date.getTime());
             mSocket.emit("newMessage", messsge,userId,id,userName,userAvatarName,userAvatarColor,"",timeStamp);
-            view.clearMessageText();
-        }
     }
 
-    public void logOut() {
-        sharedPrefs.setLoggedIn(false);
-        view.showLoginScreen();
-    }
+
 
     public void getAllMessagesOffline(String channelName) {
-        String id = "";
-        for(ChannelResponse res : channels){
-            if(res.getChannelName().equals(channelName)){
-                id = res.getChannelId();
-                break;
-            }
-        }
-        MessageDatabase.getInstance(mContext).getMessageDao().getAllMessages(id)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<MessageResponse>>() {
-                    @Override
-                    public void accept(List<MessageResponse> messageResponses) throws Exception {
-                        messages = new ArrayList<>();
-                        messages.addAll(messageResponses);
-                        view.updateRecyclerView(messages);
-                    }
-                });
+//        String id = "";
+//        for(ChannelResponse res : channels){
+//            if(res.getChannelName().equals(channelName)){
+//                id = res.getChannelId();
+//                break;
+//            }
+//        }
+//        MessageDatabase.getInstance(mContext).getMessageDao().getAllMessages(id)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Consumer<List<MessageResponse>>() {
+//                    @Override
+//                    public void accept(List<MessageResponse> messageResponses) throws Exception {
+//                        messages = new ArrayList<>();
+//                        messages.addAll(messageResponses);
+//                        view.updateRecyclerView(messages);
+//                    }
+//                });
     }
 
     public void getAllChannelsOffline() {
-        ChannelDatabase.getInstance(mContext).getChannelDao().getChannels()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<List<ChannelResponse>>() {
-                    @Override
-                    public void accept(List<ChannelResponse> channelResponses) throws Exception {
-                        channels = new ArrayList<>();
-                        channels.addAll(channelResponses);
-                        view.addChannelInList(channels);
-                    }
-                });
+//        ChannelDatabase.getInstance(mContext).getChannelDao().getChannels()
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Consumer<List<ChannelResponse>>() {
+//                    @Override
+//                    public void accept(List<ChannelResponse> channelResponses) throws Exception {
+//                        channels = new ArrayList<>();
+//                        channels.addAll(channelResponses);
+//                        view.addChannelInList(channels);
+//                    }
+//                });
     }
 
 

@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,6 +12,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.View;
@@ -31,14 +33,19 @@ import android.widget.Toast;
 import com.anonymanager.mdadil2019.smack_mvvm.R;
 import com.smack.mdadil2019.smack_mvvm.adapter.ChatAdapter;
 import com.smack.mdadil2019.smack_mvvm.data.network.model.ChannelResponse;
+import com.smack.mdadil2019.smack_mvvm.data.network.model.MessageResponse;
 import com.smack.mdadil2019.smack_mvvm.data.prefs.AppPreferencesHelper;
 import com.smack.mdadil2019.smack_mvvm.di.root.MyApp;
+import com.smack.mdadil2019.smack_mvvm.ui.login.LoginActivity;
 
 import java.util.ArrayList;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
@@ -72,6 +79,7 @@ public class NavDrawer extends AppCompatActivity
     NavigationView navigationView;
 
     @Inject
+    @Named("NavDrawerViewModelFactory")
     ViewModelProvider.Factory mFactory;
 
     NavDrawerViewModel mViewModel;
@@ -88,6 +96,7 @@ public class NavDrawer extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav_drawer);
         ((MyApp)getApplication()).getApplicationComponent().inject(this);
+        ButterKnife.bind(this);
         getViewModel();
         setObservers();
 
@@ -161,13 +170,30 @@ public class NavDrawer extends AppCompatActivity
                 addChannelInList(channelResponses);
             }
         });
+
+        mViewModel.chatRoomData.observe(this, new Observer<ArrayList<MessageResponse>>() {
+            @Override
+            public void onChanged(@Nullable ArrayList<MessageResponse> messageResponses) {
+                updateRecyclerView(messageResponses);
+                if(navProgressBar.getVisibility()==VISIBLE)
+                    navProgressBar.setVisibility(INVISIBLE);
+            }
+        });
+
+        mViewModel.chatRoomErrorData.observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String s) {
+                Toast.makeText(NavDrawer.this, s, Toast.LENGTH_SHORT).show();
+                navProgressBar.setVisibility(INVISIBLE);
+            }
+        });
     }
 
     private void getViewModel() {
         mViewModel = ViewModelProviders.of(this,mFactory).get(NavDrawerViewModel.class);
     }
 
-    public void addChannelInList(final ArrayList<ChannelResponse> channelResponses) {
+    private void addChannelInList(final ArrayList<ChannelResponse> channelResponses) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -178,6 +204,31 @@ public class NavDrawer extends AppCompatActivity
                 }
             }
         });
+    }
+
+    private void updateRecyclerView(final ArrayList<MessageResponse> responses) {
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                selectChannelLabel.setVisibility(View.INVISIBLE);
+                chatAdapter = new ChatAdapter(responses,NavDrawer.this);
+                LinearLayoutManager layoutManager = new LinearLayoutManager(NavDrawer.this);
+                recyclerView.setLayoutManager(layoutManager);
+                recyclerView.setAdapter(chatAdapter);
+                recyclerView.smoothScrollToPosition(responses.size());
+            }
+        });
+    }
+
+
+    @OnClick(R.id.sendBtn)void sendMessage(){
+        String message = messageEt.getText().toString();
+        if(message!=null && !message.equals("")){
+            mViewModel.sendMessage(currentChannelName,message);
+            messageEt.setText("");
+        }
+
     }
 
     @Override
@@ -204,33 +255,40 @@ public class NavDrawer extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_logout) {
+            prefs.setLoggedIn(false);
+            logout();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
+    }
+
+    private void logout() {
+        startActivity(new Intent(this,LoginActivity.class));
+        finish();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
+
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        currentChannelName = item.toString();
 
-        } else if (id == R.id.nav_slideshow) {
 
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        //view model will contain two methods 1. for network call 2. for local db call
+        if(isNetworkAvalable()){
+            mViewModel.openChatRoom(currentChannelName);
+            navProgressBar.setVisibility(VISIBLE);
         }
+        else
+            mViewModel.getAllMessagesOffline(currentChannelName);
+
+        cardView.setVisibility(View.VISIBLE);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

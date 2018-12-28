@@ -3,6 +3,7 @@ package com.smack.mdadil2019.smack_mvvm.ui.signup;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 import com.anonymanager.mdadil2019.smack_mvvm.R;
 import com.smack.mdadil2019.smack_mvvm.data.network.model.CreateUserResponse;
 import com.smack.mdadil2019.smack_mvvm.di.root.MyApp;
+import com.smack.mdadil2019.smack_mvvm.ui.chat.NavDrawer;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -67,6 +69,7 @@ public class RegistrationActivity extends AppCompatActivity {
 
                 //start another activity
                 Toast.makeText(RegistrationActivity.this, createUserResponse.getEmail(), Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(RegistrationActivity.this,NavDrawer.class));
             }
         });
 
